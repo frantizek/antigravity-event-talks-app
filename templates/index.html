@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Cloud BigQuery Release Monitor</title>
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="Monitor and share the latest Google Cloud BigQuery release notes. Easily filter updates and draft social media updates in real time.">
+    <meta name="keywords" content="Google Cloud, BigQuery, Release Notes, Database, Data Warehouse, Cloud Computing">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Application Header -->
+        <header>
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div>
+                    <h1>BigQuery Release Monitor</h1>
+                    <p>Track, filter, and share the latest BigQuery updates</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="status-indicator">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span id="status-text">Fetching feed...</span>
+                </div>
+                <button class="btn-refresh" id="btn-refresh" title="Refresh Release Notes">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </header>
+
+        <!-- Filter & Search Controls -->
+        <section class="filter-bar" id="controls">
+            <h2 class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">Filters</h2>
+            
+            <div class="search-box">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input type="text" id="search-input" placeholder="Search updates, keywords, dates..." aria-label="Search release notes">
+            </div>
+            
+            <div class="filter-group" aria-label="Filter updates by type">
+                <span class="filter-label">Filter:</span>
+                <button class="filter-btn active" data-category="all">All</button>
+                <button class="filter-btn" data-category="Feature">Features</button>
+                <button class="filter-btn" data-category="Changed">Changes</button>
+                <button class="filter-btn" data-category="Deprecated">Deprecated</button>
+                <button class="filter-btn" data-category="Fixed">Fixes</button>
+                <button class="filter-btn" data-category="General">General</button>
+            </div>
+
+            <button class="sort-toggle" id="btn-sort" aria-label="Toggle sort direction">
+                <i class="fas fa-sort-amount-down"></i> Newest First
+            </button>
+        </section>
+
+        <!-- Main Dashboard Grid -->
+        <main class="main-grid">
+            <!-- Left Panel: Feed Column -->
+            <section class="feed-section" aria-label="Release note updates list">
+                <div id="feed-container">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <h3 style="font-family: var(--font-heading);">Parsing Feed</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Fetching the latest BigQuery releases...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Sidebar Column -->
+            <aside class="sidebar" aria-label="Social sharing composer and history">
+                <!-- Tweet Composer -->
+                <div class="composer-panel">
+                    <div class="panel-title">
+                        <i class="fab fa-x-twitter" aria-hidden="true"></i>
+                        <span>Tweet Composer</span>
+                    </div>
+
+                    <!-- Placeholder when no update is selected -->
+                    <div id="composer-placeholder" class="composer-placeholder">
+                        <i class="fas fa-edit" aria-hidden="true"></i>
+                        <p>Select any specific update card on the left to start drafting a tweet about it.</p>
+                    </div>
+
+                    <!-- Form for Composer (hidden until selected) -->
+                    <div id="composer-form" class="composer-form" style="display: none;">
+                        <div class="selected-reference-info">
+                            <div>
+                                <strong style="color: var(--text-primary);">Selected Update:</strong> 
+                                <span id="composer-ref-type">Feature</span>
+                            </div>
+                            <div id="composer-ref-date" style="font-size: 0.7rem; color: var(--text-muted);">June 17, 2026</div>
+                        </div>
+
+                        <div class="composer-textarea-container">
+                            <textarea id="composer-textarea" class="composer-textarea" aria-label="Tweet text area" maxlength="500" placeholder="What's happening in BigQuery?"></textarea>
+                        </div>
+
+                        <div class="composer-footer">
+                            <div class="char-counter" id="char-count">0/280</div>
+                            <div class="composer-actions">
+                                <button type="button" class="btn-mock-post" id="btn-mock-post">Post (Mock)</button>
+                                <button type="button" class="btn-tweet-real" id="btn-tweet-real">
+                                    <i class="fab fa-x-twitter" aria-hidden="true"></i> Tweet
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tweet Log Panel -->
+                <div class="tweet-log-panel">
+                    <div class="tweet-log-header">
+                        <div class="panel-title" style="font-size: 0.95rem;">
+                            <i class="fas fa-history" aria-hidden="true" style="color: var(--color-purple);"></i>
+                            <span>Mock Tweet Wall</span>
+                        </div>
+                        <button class="btn-clear-log" id="btn-clear-log" aria-label="Clear session tweet history">Clear Wall</button>
+                    </div>
+                    <div id="tweet-log-list" class="tweet-log-list">
+                        <!-- Instantiated by JS -->
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Main JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
